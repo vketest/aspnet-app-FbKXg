@@ -1,0 +1,31 @@
+apiVersion: skaffold/v1alpha2
+kind: Config
+build:
+  tagPolicy:
+    envTemplate:
+      template: "{{.DOCKER_REGISTRY}}/vketest/aspnet-app-fbkxg:{{.VERSION}}"
+  artifacts:
+  - imageName: changeme
+    workspace: .
+    docker: {}
+  local: {}
+deploy:
+  kubectl:
+    manifests:
+profiles:
+- name: dev
+  build:
+    tagPolicy:
+      envTemplate:
+        template: "{{.DOCKER_REGISTRY}}/vketest/aspnet-app-fbkxg:{{.DIGEST_HEX}}"
+    artifacts:
+    - docker: {}
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: aspnet-app-fbkxg
+        chartPath: charts/aspnet-app-fbkxg
+        setValueTemplates:
+          image.repository: "{{.DOCKER_REGISTRY}}/vketest/aspnet-app-fbkxg"
+          image.tag: "{{.DIGEST_HEX}}"
